@@ -1,0 +1,56 @@
+<script type="module">
+  // Import Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDduY7k1oU9ceymR1mqY3EaJTajIPjn_8Y",
+    authDomain: "data-penting-keluarga.firebaseapp.com",
+    projectId: "data-penting-keluarga",
+    storageBucket: "data-penting-keluarga.firebasestorage.app",
+    messagingSenderId: "25837458569",
+    appId: "1:25837458569:web:d56fe8a67718e907e5a258",
+    measurementId: "G-XK80HQRZ3X"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getFirestore(app);
+
+  // Fungsi pengecekan login terhubung ke Firestore
+  window.handleAdminLogin = async function(event) {
+    event.preventDefault();
+    const userInput = document.getElementById('loginUsername').value.trim();
+    const passInput = document.getElementById('loginPassword').value.trim();
+    const errorMsg = document.getElementById('loginError');
+
+    try {
+      const querySnapshot = await getDocs(collection(db, "users"));
+      let isValid = false;
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.username === userInput && data.password === passInput) {
+          isValid = true;
+        }
+      });
+
+      if (isValid) {
+        // Simpan status login di sessionStorage agar tidak perlu login ulang di tab yang sama
+        sessionStorage.setItem('isLoggedIn', 'true');
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('appContent').style.display = 'flex';
+      } else {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Username atau password salah!';
+      }
+    } catch (error) {
+      console.error("Error connecting to Firestore:", error);
+      errorMsg.style.display = 'block';
+      errorMsg.innerText = 'Terjadi kesalahan koneksi database.';
+    }
+  };
+</script>
